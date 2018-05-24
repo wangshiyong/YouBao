@@ -6,9 +6,9 @@
 //  Copyright © 2018年 王世勇. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import "WSYBaseViewController.h"
 
-@interface ViewController : UIViewController
+@interface ViewController : WSYBaseViewController
 
 
 @end

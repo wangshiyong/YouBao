@@ -8,8 +8,11 @@
 
 #import "AppDelegate.h"
 #import "WSYTabBarControllerConfig.h"
+#import <ShareSDKConnector/ShareSDKConnector.h>
+#import "WXApi.h"
+#import <PPNetworkHelper/PPNetworkHelper.h>
 
-@interface AppDelegate ()<UITabBarControllerDelegate, CYLTabBarControllerDelegate, CLLocationManagerDelegate>
+@interface AppDelegate ()<UITabBarControllerDelegate, CYLTabBarControllerDelegate, CLLocationManagerDelegate, WXApiDelegate>
 
 @property (nonatomic, strong) CLLocationManager *locationManager;
 
@@ -23,34 +26,8 @@
     [self setUpRootVC];
     [self setUpFixiOS11]; //适配IOS 11
     [self startLocation];
-    
+    [self monitorNetworkStatus]; // 实时监测网络状态
     return YES;
-}
-
-#pragma mark ==========根控制器==========
-
-- (void)setUpRootVC {
-    self.window = [[UIWindow alloc]init];
-    self.window.frame = [UIScreen mainScreen].bounds;
-    //    [CYLPlusButtonSubclass registerPlusButton];
-    WSYTabBarControllerConfig *tabBarControllerConfig = [[WSYTabBarControllerConfig alloc] init];
-    CYLTabBarController *tabBarController = tabBarControllerConfig.tabBarController;
-    [self.window setRootViewController:tabBarController];
-    
-    tabBarController.delegate = self;
-    [self.window makeKeyAndVisible];
-    [self customizeInterfaceWithTabBarController:tabBarController];
-}
-
-#pragma mark ==========适配==========
-
-- (void)setUpFixiOS11 {
-    if (@available(ios 11.0,*)) {
-        UIScrollView.appearance.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-        UITableView.appearance.estimatedRowHeight = 0;
-        UITableView.appearance.estimatedSectionFooterHeight = 0;
-        UITableView.appearance.estimatedSectionHeaderHeight = 0;
-    }
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -78,8 +55,67 @@
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
+    
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<NSString*, id> *)options {
+    [WXApi handleOpenURL:url delegate:self];
+    return  YES;
+}
+    
+- (void)onReq:(BaseReq *)req {
+    NSLog(@"--->%s wxapi onreq:%@",__func__,req);
+}
+    
+- (void)onResp:(BaseResp *)resp {
+    NSLog(@"--->%s wxapi onresp:%@",__func__,resp);
+}
+    
+#pragma mark ==========适配==========
+    
+- (void)setUpFixiOS11 {
+    if (@available(ios 11.0,*)) {
+        UIScrollView.appearance.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        UITableView.appearance.estimatedRowHeight = 0;
+        UITableView.appearance.estimatedSectionFooterHeight = 0;
+        UITableView.appearance.estimatedSectionHeaderHeight = 0;
+    }
+}
 
+#pragma mark - 实时监测网络状态
+- (void)monitorNetworkStatus {
+    [PPNetworkHelper networkStatusWithBlock:^(PPNetworkStatusType networkStatus) {
+        switch (networkStatus) {
+                // 未知网络
+            case PPNetworkStatusUnknown:
+                // 无网络
+            case PPNetworkStatusNotReachable:
+                [self.window.rootViewController showHUDWindow:@"无网络连接"];
+                break;
+                // 手机网络
+            case PPNetworkStatusReachableViaWWAN:
+                [self.window.rootViewController showHUDWindow:@"移动(3G/4G)网络已连接"];
+                break;
+            case PPNetworkStatusReachableViaWiFi:
+                [self.window.rootViewController showHUDWindow:@"Wi-Fi网络已连接"];
+                break;
+        }
+    }];
+}
 
+#pragma mark ==========私有方法==========
+    
+- (void)setUpRootVC {
+    self.window = [[UIWindow alloc]init];
+    self.window.frame = [UIScreen mainScreen].bounds;
+    //    [CYLPlusButtonSubclass registerPlusButton];
+    WSYTabBarControllerConfig *tabBarControllerConfig = [[WSYTabBarControllerConfig alloc] init];
+    CYLTabBarController *tabBarController = tabBarControllerConfig.tabBarController;
+    [self.window setRootViewController:tabBarController];
+    
+    tabBarController.delegate = self;
+    [self.window makeKeyAndVisible];
+    [self customizeInterfaceWithTabBarController:tabBarController];
+}
+    
 - (void)customizeInterfaceWithTabBarController:(CYLTabBarController *)tabBarController {
     //设置导航栏
     [self setUpNavigationBarAppearance];
@@ -111,32 +147,32 @@
  *  设置navigationBar样式
  */
 - (void)setUpNavigationBarAppearance {
-    UINavigationBar *navigationBarAppearance = [UINavigationBar appearance];
-    
-    UIImage *backgroundImage = nil;
-    NSDictionary *textAttributes = nil;
-    if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
-        backgroundImage = [UIImage imageNamed:@"navigationbar_background_tall"];
-        
-        textAttributes = @{
-                           NSFontAttributeName : [UIFont boldSystemFontOfSize:18],
-                           NSForegroundColorAttributeName : [UIColor blackColor],
-                           };
-    } else {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
-        backgroundImage = [UIImage imageNamed:@"navigationbar_background"];
-        textAttributes = @{
-                           UITextAttributeFont : [UIFont boldSystemFontOfSize:18],
-                           UITextAttributeTextColor : [UIColor blackColor],
-                           UITextAttributeTextShadowColor : [UIColor clearColor],
-                           UITextAttributeTextShadowOffset : [NSValue valueWithUIOffset:UIOffsetZero],
-                           };
-#endif
-    }
-    
-    [navigationBarAppearance setBackgroundImage:backgroundImage
-                                  forBarMetrics:UIBarMetricsDefault];
-    [navigationBarAppearance setTitleTextAttributes:textAttributes];
+//    UINavigationBar *navigationBarAppearance = [UINavigationBar appearance];
+//
+//    UIImage *backgroundImage = nil;
+//    NSDictionary *textAttributes = nil;
+//    if (NSFoundationVersionNumber > NSFoundationVersionNumber_iOS_6_1) {
+//        backgroundImage = [UIImage imageNamed:@"navigationbar_background_tall"];
+//
+//        textAttributes = @{
+//                           NSFontAttributeName : [UIFont boldSystemFontOfSize:18],
+//                           NSForegroundColorAttributeName : [UIColor blackColor],
+//                           };
+//    } else {
+//#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
+//        backgroundImage = [UIImage imageNamed:@"navigationbar_background"];
+//        textAttributes = @{
+//                           UITextAttributeFont : [UIFont boldSystemFontOfSize:18],
+//                           UITextAttributeTextColor : [UIColor blackColor],
+//                           UITextAttributeTextShadowColor : [UIColor clearColor],
+//                           UITextAttributeTextShadowOffset : [NSValue valueWithUIOffset:UIOffsetZero],
+//                           };
+//#endif
+//    }
+//
+//    [navigationBarAppearance setBackgroundImage:backgroundImage
+//                                  forBarMetrics:UIBarMetricsDefault];
+//    [navigationBarAppearance setTitleTextAttributes:textAttributes];
 }
 
 
@@ -229,6 +265,7 @@
         NSLog(@"无法获取位置信息");
     }
 }
+    
 //定位代理经纬度回调
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations
 {
@@ -265,4 +302,5 @@
     [manager stopUpdatingLocation];
 }
 
+    
 @end

@@ -24,6 +24,7 @@
 
 #import "WSYHomeViewController.h"
 #import "WSYMyViewController.h"
+#import "WSYDestinationViewController.h"
 
 static CGFloat const CYLTabBarControllerHeight = 40.f;
 
@@ -66,7 +67,7 @@ static CGFloat const CYLTabBarControllerHeight = 40.f;
     UIViewController *firstNavigationController = [[WSYBaseNavigationController alloc]
                                                    initWithRootViewController:firstViewController];
     
-    WSYMyViewController *secondViewController = [[WSYMyViewController alloc] init];
+    WSYDestinationViewController *secondViewController = [[WSYDestinationViewController alloc] init];
     UIViewController *secondNavigationController = [[WSYBaseNavigationController alloc]
                                                     initWithRootViewController:secondViewController];
     
@@ -95,7 +96,7 @@ static CGFloat const CYLTabBarControllerHeight = 40.f;
                                                  CYLTabBarItemSelectedImage : @"home_highlight", /* NSString and UIImage are supported*/
                                                  };
     NSDictionary *secondTabBarItemsAttributes = @{
-                                                  CYLTabBarItemTitle : @"同城",
+                                                  CYLTabBarItemTitle : @"目的地",
                                                   CYLTabBarItemImage : @"mycity_normal",
                                                   CYLTabBarItemSelectedImage : @"mycity_highlight",
                                                   };

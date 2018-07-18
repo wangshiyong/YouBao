@@ -82,78 +82,119 @@
 
 + (NSArray *)settingPageData
 {
-    // ========== section 1
-    SJStaticTableviewCellViewModel *vm1 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm1.leftTitle = @"编辑个人信息";
-    vm1.identifier = 1;
-    
-    SJStaticTableviewCellViewModel *vm2 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm2.leftTitle = @"常住地";
-    if (![WSYUserDataTool getUserData:CITY_NAME]) {
-        vm2.indicatorLeftTitle = [WSYUserDataTool getUserData:GPS_CITY];
+    if ([[WSYUserDataTool getUserData:USER_LOGIN] integerValue] == 1) {
+        // ========== section 1
+        SJStaticTableviewCellViewModel *vm1 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm1.leftTitle = @"编辑个人信息";
+        vm1.identifier = 1;
+        
+        SJStaticTableviewCellViewModel *vm2 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm2.leftTitle = @"常住地";
+        if (![WSYUserDataTool getUserData:CITY_NAME]) {
+            vm2.indicatorLeftTitle = [WSYUserDataTool getUserData:GPS_CITY];
+        } else {
+            vm2.indicatorLeftTitle = [WSYUserDataTool getUserData:CITY_NAME];
+        }
+        vm2.identifier = 2;
+        
+        SJStaticTableviewCellViewModel *vm3 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm3.leftTitle = @"常用消息设置";
+        vm3.identifier = 3;
+        
+        SJStaticTableviewSectionViewModel *section1 = [[SJStaticTableviewSectionViewModel alloc] initWithCellViewModelsArray:@[vm1,vm2,vm3]];
+        
+        // ========== section 2
+        SJStaticTableviewCellViewModel *vm4 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm4.leftTitle = @"账号绑定与设置";
+        vm4.identifier = 4;
+        
+        SJStaticTableviewCellViewModel *vm5 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm5.leftTitle = @"通知设置";
+        vm5.identifier = 5;
+        
+        SJStaticTableviewCellViewModel *vm6 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm6.leftTitle = @"清除缓存";
+        vm6.identifier = 6;
+        
+        SJStaticTableviewSectionViewModel *section2 = [[SJStaticTableviewSectionViewModel alloc] initWithCellViewModelsArray: @[vm4,vm5,vm6]];
+        
+        
+        // ========== section 3
+        SJStaticTableviewCellViewModel *vm7 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm7.leftTitle = @"常用问题与反馈";
+        vm7.identifier = 7;
+        
+        SJStaticTableviewCellViewModel *vm8 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm8.leftTitle = @"推荐给朋友";
+        vm8.identifier = 8;
+        
+        SJStaticTableviewCellViewModel *vm9 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm9.leftTitle = @"支持我们，打分评价";
+        vm9.identifier = 9;
+        
+        SJStaticTableviewCellViewModel *vm10 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm10.leftTitle = @"开机视频";
+        vm10.identifier = 10;
+        
+        SJStaticTableviewCellViewModel *vm11 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm11.leftTitle = @"关于游宝";
+        vm11.identifier = 11;
+        
+        SJStaticTableviewSectionViewModel *section3 = [[SJStaticTableviewSectionViewModel alloc] initWithCellViewModelsArray:@[vm7,vm8,vm9,vm10,vm11]];
+        
+        // ========== section 4
+        SJStaticTableviewCellViewModel *vm12 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm12.staticCellType = SJStaticCellTypeSystemLogout;
+        vm12.cellID = @"logout";
+        vm12.identifier = 12;
+        vm12.cellHeight = 50;
+        vm12.leftLabelTextColor = [UIColor redColor];
+        vm12.leftLabelTextFont = [UIFont systemFontOfSize:18];
+        
+        
+        SJStaticTableviewSectionViewModel *section4 = [[SJStaticTableviewSectionViewModel alloc] initWithCellViewModelsArray:@[vm12]];
+        
+        return @[section1,section2,section3,section4];
     } else {
-        vm2.indicatorLeftTitle = [WSYUserDataTool getUserData:CITY_NAME];
+        // ========== section 1
+        
+        SJStaticTableviewCellViewModel *vm5 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm5.leftTitle = @"通知设置";
+        vm5.identifier = 5;
+        
+        SJStaticTableviewCellViewModel *vm6 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm6.leftTitle = @"清除缓存";
+        vm6.identifier = 6;
+        
+        SJStaticTableviewSectionViewModel *section2 = [[SJStaticTableviewSectionViewModel alloc] initWithCellViewModelsArray: @[vm5,vm6]];
+        
+        
+        // ========== section 3
+        SJStaticTableviewCellViewModel *vm7 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm7.leftTitle = @"常用问题与反馈";
+        vm7.identifier = 7;
+        
+        SJStaticTableviewCellViewModel *vm8 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm8.leftTitle = @"推荐给朋友";
+        vm8.identifier = 8;
+        
+        SJStaticTableviewCellViewModel *vm9 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm9.leftTitle = @"支持我们，打分评价";
+        vm9.identifier = 9;
+        
+        SJStaticTableviewCellViewModel *vm10 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm10.leftTitle = @"开机视频";
+        vm10.identifier = 10;
+        
+        SJStaticTableviewCellViewModel *vm11 = [[SJStaticTableviewCellViewModel alloc] init];
+        vm11.leftTitle = @"关于游宝";
+        vm11.identifier = 11;
+        
+        SJStaticTableviewSectionViewModel *section3 = [[SJStaticTableviewSectionViewModel alloc] initWithCellViewModelsArray:@[vm7,vm8,vm9,vm10,vm11]];
+        
+        return @[section2,section3];
     }
-    vm2.identifier = 2;
     
-    SJStaticTableviewCellViewModel *vm3 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm3.leftTitle = @"常用消息设置";
-    vm3.identifier = 3;
-    
-    SJStaticTableviewSectionViewModel *section1 = [[SJStaticTableviewSectionViewModel alloc] initWithCellViewModelsArray:@[vm1,vm2,vm3]];
-    
-    // ========== section 2
-    SJStaticTableviewCellViewModel *vm4 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm4.leftTitle = @"账号绑定与设置";
-    vm4.identifier = 4;
-    
-    SJStaticTableviewCellViewModel *vm5 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm5.leftTitle = @"通知设置";
-    vm5.identifier = 5;
-    
-    SJStaticTableviewCellViewModel *vm6 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm6.leftTitle = @"清除缓存";
-    vm6.identifier = 6;
-    
-    SJStaticTableviewSectionViewModel *section2 = [[SJStaticTableviewSectionViewModel alloc] initWithCellViewModelsArray: @[vm4,vm5,vm6]];
-    
-    
-    // ========== section 3
-    SJStaticTableviewCellViewModel *vm7 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm7.leftTitle = @"常用问题与反馈";
-    vm7.identifier = 7;
-    
-    SJStaticTableviewCellViewModel *vm8 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm8.leftTitle = @"推荐给朋友";
-    vm8.identifier = 8;
-    
-    SJStaticTableviewCellViewModel *vm9 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm9.leftTitle = @"支持我们，打分评价";
-    vm9.identifier = 9;
-    
-    SJStaticTableviewCellViewModel *vm10 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm10.leftTitle = @"开机视频";
-    vm10.identifier = 10;
-    
-    SJStaticTableviewCellViewModel *vm11 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm11.leftTitle = @"关于游宝";
-    vm11.identifier = 11;
-    
-    SJStaticTableviewSectionViewModel *section3 = [[SJStaticTableviewSectionViewModel alloc] initWithCellViewModelsArray:@[vm7,vm8,vm9,vm10,vm11]];
-    
-    // ========== section 4
-    SJStaticTableviewCellViewModel *vm12 = [[SJStaticTableviewCellViewModel alloc] init];
-    vm12.staticCellType = SJStaticCellTypeSystemLogout;
-    vm12.cellID = @"logout";
-    vm12.identifier = 12;
-    vm12.cellHeight = 50;
-    vm12.leftLabelTextColor = [UIColor redColor];
-    vm12.leftLabelTextFont = [UIFont systemFontOfSize:18];
-    
-    
-    SJStaticTableviewSectionViewModel *section4 = [[SJStaticTableviewSectionViewModel alloc] initWithCellViewModelsArray:@[vm12]];
-    
-    return @[section1,section2,section3,section4];
 }
 
 + (NSArray *)infoPageData

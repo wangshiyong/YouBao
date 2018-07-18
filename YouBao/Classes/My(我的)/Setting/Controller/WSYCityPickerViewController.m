@@ -30,7 +30,16 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    [self setUpNav];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (void)setUpNav {
+    self.customNavBar.title = @"城市选择";
     WSYCityHeaderView *headView = [[WSYCityHeaderView alloc]initWithFrame:(CGRect){0, NAV_HEIGHT, kScreenWidth, 80}];
     [self.view addSubview:headView];
     [self.view addSubview:self.tableView];
@@ -58,11 +67,11 @@
         PYSearchViewController *searchViewController = [PYSearchViewController searchViewControllerWithHotSearches:hotSeaches searchBarPlaceholder:@"搜索城市" didSearchBlock:^(PYSearchViewController *searchViewController, UISearchBar *searchBar, NSString *searchText) {
             if ([searchText containsString:@"市"]) {
                 [WSYUserDataTool setUserData:searchText forKey:CITY_NAME];
-                [[NSNotificationCenter defaultCenter]postNotificationName:@"111" object:nil];
+                [[NSNotificationCenter defaultCenter]postNotificationName:SELECT_CITY_NOTICE object:nil];
                 [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
             }
         }];
-
+        
         searchViewController.hotSearchStyle = 4;
         searchViewController.searchHistoryStyle = 2;
         searchViewController.delegate = self;
@@ -70,11 +79,6 @@
         UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:searchViewController];
         [self presentViewController:nav animated:YES completion:nil];
     };
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 #pragma mark ============PYSearchViewControllerDelegate============

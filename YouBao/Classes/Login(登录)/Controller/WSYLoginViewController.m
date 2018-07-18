@@ -12,15 +12,21 @@
 #import "WSYRegisterViewController.h"
 // Models
 #import "WSYLoginViewModel.h"
+#import "WSYUserModel.h"
 // Views
 #import "WSYAccountPsdView.h"
 #import "WSYVerificationView.h"
 // Vendors
 #import <YYText/YYText.h>
+#import <ShareSDK/ShareSDK+Base.h>
+#import "CRToast.h"
 // Categories
 #import "UIButton+Layout.h"
 
-@interface WSYLoginViewController ()<UIScrollViewDelegate>
+@interface WSYLoginViewController ()<UIScrollViewDelegate>{
+    NSTimer *_timer;
+    NSInteger _i;
+}
 
 @property (strong , nonatomic)UIView *middleLoginView;
 /* 上一次选中的按钮 */
@@ -55,12 +61,17 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
     [self setUpNav];
     [self setUpTiTleView];
     [self setUpContentView];
     [self setUpBottomView];
     [self bindAccountModel];
+    [self bindUI];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [_timer invalidate];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -68,7 +79,7 @@
     // Dispose of any resources that can be recreated.
 }
 
-#pragma mark ============点击事件============
+#pragma mark ============绑定监听============
 
 /**
  绑定登录
@@ -78,34 +89,174 @@
     RAC(self.loginModel, userName) = self.accountPsdView.accountText.rac_textSignal;
     RAC(self.loginModel, password) = self.accountPsdView.pwdText.rac_textSignal;
     RAC(self.accountPsdView.loginBtn, enabled) = [self.loginModel validSignal];
+    RAC(self.loginModel, phone) = self.verificationView.phoneText.rac_textSignal;
+    RAC(self.loginModel, code) = self.verificationView.codeText.rac_textSignal;
+    RAC(self.verificationView.loginCodeBtn, enabled) = [self.loginModel validSignalCode];
+    RAC(self.verificationView.codeBtn, enabled) = [self.loginModel validSignalCodeBtn];
     
     @weakify(self);
     [self.loginModel.successSubject subscribeNext:^(NSString *str){
         @strongify(self);
-        NSLog(@"%@=====",str);
+        [[NSNotificationCenter defaultCenter]postNotificationName:LOGIN_SUCESSS_NOTICE object:nil];
+        [WSYUserDataTool setUserData:@1 forKey:USER_LOGIN];
+        [self showSuccessHUDWindow:str];
+        [self dismissViewControllerAnimated:YES completion:nil];
     }];
     
     [self.loginModel.failureSubject subscribeNext:^(NSString *str){
         @strongify(self);
-        NSLog(@"%@=====",str);
+        [self showErrorHUD:str];
     }];
     
     [self.loginModel.errorSubject subscribeNext:^(NSString *str){
         @strongify(self);
-        NSLog(@"%@=====",str);
+        [self showErrorHUD:str];
     }];
     
     RAC(self.accountPsdView.loginBtn, alpha) = [[self.loginModel validSignal] map:^(NSNumber *b){
         return b.boolValue ? @1: @0.4;
     }];
-    
     [[self.accountPsdView.loginBtn rac_signalForControlEvents:UIControlEventTouchUpInside]subscribeNext:^(id x){
         @strongify(self);
         [self.loginModel loginBtn];
+    }];
+
+    
+    [self.loginModel.successSubjectGetCode subscribeNext:^(id x){
+        @strongify(self);
+        [CRToastManager showNotificationWithOptions:[self successOptions]
+                                     apperanceBlock:nil
+                                    completionBlock:nil];
+    }];
+    
+    [self.loginModel.failureSubjectGetCode subscribeNext:^(id x){
+        @strongify(self);
+        [CRToastManager showNotificationWithOptions:[self failureOptions]
+                                     apperanceBlock:nil
+                                    completionBlock:nil];
+    }];
+    
+    [[self.verificationView.codeBtn rac_signalForControlEvents:UIControlEventTouchUpInside]subscribeNext:^(id x){
+        @strongify(self);
+        if ([self isChinaMobile:self.verificationView.phoneText.text]) {
+            [self.loginModel getCodeBtn];
+            self->_timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(startCount) userInfo:nil repeats:YES];
+            self->_i = 60;
+        } else {
+            [CRToastManager showNotificationWithOptions:[self failureOptions]
+                                         apperanceBlock:nil
+                                        completionBlock:nil];
+        }
+    }];
+    
+    [self.loginModel.successSubjectCode subscribeNext:^(NSString *str){
+        @strongify(self);
+        NSLog(@"%@=====",str);
         [self dismissViewControllerAnimated:YES completion:nil];
+    }];
+    
+    [self.loginModel.errorSubjectCode subscribeNext:^(NSString *str){
+        NSLog(@"%@=====",str);
+    }];
+    
+    RAC(self.verificationView.codeBtn, alpha) = [[self.loginModel validSignalCodeBtn] map:^(NSNumber *b){
+        return b.boolValue ? @1: @0.4;
+    }];
+    
+    RAC(self.verificationView.loginCodeBtn, alpha) = [[self.loginModel validSignalCode] map:^(NSNumber *b){
+        return b.boolValue ? @1: @0.4;
+    }];
+    
+    [[self.verificationView.loginCodeBtn rac_signalForControlEvents:UIControlEventTouchUpInside]subscribeNext:^(id x){
+        @strongify(self);
+        [self.loginModel loginBtnCode];
     }];
 }
 
+/**
+ 绑定UI
+*/
+- (void)bindUI {
+    @weakify(self);
+    [[self.qqBtn rac_signalForControlEvents:UIControlEventTouchUpInside]subscribeNext:^(id x){
+        @strongify(self);
+        [self authAct:SSDKPlatformTypeQQ];
+    }];
+    
+    [[self.weiboBtn rac_signalForControlEvents:UIControlEventTouchUpInside]subscribeNext:^(id x){
+        @strongify(self);
+        [self authAct:SSDKPlatformTypeSinaWeibo];
+    }];
+    
+    [[self.wechatBtn rac_signalForControlEvents:UIControlEventTouchUpInside]subscribeNext:^(id x){
+        @strongify(self);
+        [self authAct:SSDKPlatformTypeWechat];
+    }];
+    
+    [[self.verificationView.phoneText rac_textSignal]subscribeNext:^(id x){
+        @strongify(self);
+        if([x length] > 11){
+            self.verificationView.phoneText.text = [NSString stringWithFormat:@"%@",[x substringToIndex:11]];
+        }
+    }];
+    
+    [[self.verificationView.codeText rac_textSignal]subscribeNext:^(id x){
+        @strongify(self);
+        if([x length] > 4){
+            self.verificationView.codeText.text = [NSString stringWithFormat:@"%@",[x substringToIndex:4]];
+        }
+    }];
+}
+    
+#pragma mark ============事件响应/方法============
+    
+- (void)authAct:(SSDKPlatformType)platformType {
+    NSLog(@"%lu====",(unsigned long)platformType);
+    [ShareSDK authorize:platformType
+               settings:nil
+         onStateChanged:^(SSDKResponseState state, SSDKUser *user, NSError *error) {
+             switch (state) {
+                 case SSDKResponseStateSuccess:
+                 {
+                     NSLog(@"%@",user.icon);
+                     NSLog(@"授权 成功");
+                     [WSYUserDataTool setUserData:user.nickname forKey:USER_NICKNAME];
+                     [WSYUserDataTool setUserData:user.icon forKey:USER_ICON];
+                     [WSYUserDataTool setUserData:@1 forKey:USER_LOGIN];
+                     [WSYUserDataTool setUserData:@(platformType) forKey:USER_TYPE];
+                     [[NSNotificationCenter defaultCenter]postNotificationName:LOGIN_SUCESSS_NOTICE object:nil];
+                     [self dismissViewControllerAnimated:YES completion:nil];
+                     break;
+                 }
+                 case SSDKResponseStateFail:
+                 {
+                     NSLog(@"%@",error);
+                     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"授权失败"
+                                                                         message:[NSString stringWithFormat:@"%@",error]
+                                                                        delegate:nil
+                                                               cancelButtonTitle:@"确认"
+                                                               otherButtonTitles: nil];
+                     [alertView show];
+                     break;
+                 }
+                 break;
+                 case SSDKResponseStateCancel:
+                 {
+
+                     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"授权取消"
+                                                                         message:nil
+                                                                        delegate:nil
+                                                               cancelButtonTitle:@"确认"
+                                                               otherButtonTitles: nil];
+                     [alertView show];
+                     break;
+                 }
+                 default:
+                 break;
+             }
+    }];
+}
+    
 - (void)buttonClick:(UIButton *)button {
     button.selected = !button.selected;
     [self.selectBtn setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
@@ -123,6 +274,63 @@
     CGPoint offset = _contentView.contentOffset;
     offset.x = self.contentView.wsy_width * button.tag;
     [self.contentView setContentOffset:offset animated:YES];
+}
+
+- (void)startCount {
+    NSString *text = [NSString stringWithFormat:@"重新发送(%zd)",_i] ;
+    [_verificationView.codeBtn setTitle:text forState:UIControlStateNormal];
+    _verificationView.codeBtn.enabled = NO;
+    _verificationView.codeBtn.backgroundColor = WSYColor(150, 150, 150);
+    
+    if (!_i--) {
+        [_timer invalidate];
+        [_verificationView.codeBtn setTitle:@"重新发送" forState:UIControlStateNormal];
+        _verificationView.codeBtn.enabled = YES;
+        _verificationView.codeBtn.backgroundColor = WSYTheme_Color;
+    }
+}
+
+- (BOOL)isChinaMobile:(NSString *)phoneNum {
+    NSString *CM = @"^1(3[0-9]|4[57]|5[0-35-9]|8[0-9]|7[0678])\\d{8}$";
+    NSPredicate *regextestcm = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", CM];
+    return [regextestcm evaluateWithObject:phoneNum];
+}
+
+- (NSDictionary*)successOptions {
+    NSDictionary *options = @{
+                              kCRToastAnimationOutDirectionKey : @(0),
+                              kCRToastNotificationTypeKey : @(CRToastTypeNavigationBar),
+                              kCRToastNotificationPresentationTypeKey : @(CRToastPresentationTypeCover),
+                              kCRToastTextKey : @"短信验证码已发送",
+                              kCRToastTimeIntervalKey : @(1.0),
+                              kCRToastTextColorKey : [UIColor blackColor],
+                              kCRToastBackgroundColorKey : [UIColor whiteColor]
+                              };
+    return [NSDictionary dictionaryWithDictionary:options];
+}
+
+- (NSDictionary*)errorOptions {
+    NSDictionary *options = @{
+                              kCRToastAnimationOutDirectionKey : @(0),
+                              kCRToastNotificationTypeKey : @(CRToastTypeNavigationBar),
+                              kCRToastNotificationPresentationTypeKey : @(CRToastPresentationTypeCover),
+                              kCRToastTextKey : @"短信验证码发送失败",
+                              kCRToastTimeIntervalKey : @(1.0),
+                              kCRToastBackgroundColorKey : WSYTheme_Color
+                              };
+    return [NSDictionary dictionaryWithDictionary:options];
+}
+
+- (NSDictionary*)failureOptions {
+    NSDictionary *options = @{
+                              kCRToastAnimationOutDirectionKey : @(0),
+                              kCRToastNotificationTypeKey : @(CRToastTypeNavigationBar),
+                              kCRToastNotificationPresentationTypeKey : @(CRToastPresentationTypeCover),
+                              kCRToastTextKey : @"请输入正确的手机号码",
+                              kCRToastTimeIntervalKey : @(1.0),
+                              kCRToastBackgroundColorKey : WSYTheme_Color
+                              };
+    return [NSDictionary dictionaryWithDictionary:options];
 }
 
 #pragma mark ============UIScrollViewDelegate============

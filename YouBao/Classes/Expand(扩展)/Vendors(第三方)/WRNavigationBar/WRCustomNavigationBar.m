@@ -91,7 +91,10 @@
     [self addSubview:self.leftButton];
     [self addSubview:self.titleLable];
     [self addSubview:self.rightButton];
+    [self addSubview:self.rightButton1];
+    [self addSubview:self.rightButton2];
     [self addSubview:self.bottomLine];
+    [self addSubview:self.searchButton];
     [self updateFrame];
     self.backgroundColor = [UIColor clearColor];
     self.backgroundView.backgroundColor = kWRDefaultBackgroundColor;
@@ -109,9 +112,13 @@
     self.backgroundView.frame = self.bounds;
     self.backgroundImageView.frame = self.bounds;
     self.leftButton.frame = CGRectMake(margin - 3 , top, buttonWidth, buttonHeight);
-    self.rightButton.frame = CGRectMake(kWRScreenWidth - buttonWidth - margin, top, buttonWidth, buttonHeight);
+    self.rightButton.frame = CGRectMake(kWRScreenWidth - buttonWidth - margin*2, top, buttonWidth + margin*2, buttonHeight);
+    self.rightButton1.frame = CGRectMake(kWRScreenWidth - buttonWidth*2 - margin*5, top, buttonWidth + margin*2, buttonHeight);
+    self.rightButton2.frame = CGRectMake(kWRScreenWidth - buttonWidth*3 - margin*8, top, buttonWidth + 20, buttonHeight);
     self.titleLable.frame = CGRectMake((kWRScreenWidth - titleLabelWidth) / 2, top, titleLabelWidth, titleLabelHeight);
     self.bottomLine.frame = CGRectMake(0, (CGFloat)(self.bounds.size.height-0.5), kWRScreenWidth, 0.5);
+    self.searchButton.frame = CGRectMake(75, top + 4, kWRScreenWidth - 150, buttonHeight - 8);
+    self.searchButton.layer.cornerRadius = (buttonHeight - 8)/2;
 }
 
 #pragma mark - 导航栏左右按钮事件
@@ -186,6 +193,51 @@
     [self wr_setRightButtonWithNormal:nil highlighted:nil title:title titleColor:titleColor];
 }
 
+//右按钮1
+- (void)wr_setRightButton1WithNormal:(UIImage *)normal highlighted:(UIImage *)highlighted title:(NSString *)title titleColor:(UIColor *)titleColor {
+    self.rightButton1.hidden = NO;
+    [self.rightButton1 setImage:normal forState:UIControlStateNormal];
+    [self.rightButton1 setImage:highlighted forState:UIControlStateHighlighted];
+    [self.rightButton1 setTitle:title forState:UIControlStateNormal];
+    [self.rightButton1 setTitleColor:titleColor forState:UIControlStateNormal];
+}
+- (void)wr_setRightButton1WithImage:(UIImage *)image title:(NSString *)title titleColor:(UIColor *)titleColor {
+    [self wr_setRightButton1WithNormal:image highlighted:image title:title titleColor:titleColor];
+}
+
+//右按钮2
+- (void)wr_setRightButton2WithNormal:(UIImage *)normal highlighted:(UIImage *)highlighted title:(NSString *)title titleColor:(UIColor *)titleColor {
+    self.rightButton2.hidden = NO;
+    [self.rightButton2 setImage:normal forState:UIControlStateNormal];
+    [self.rightButton2 setImage:highlighted forState:UIControlStateHighlighted];
+    [self.rightButton2 setTitle:title forState:UIControlStateNormal];
+    [self.rightButton2 setTitleColor:titleColor forState:UIControlStateNormal];
+}
+- (void)wr_setRightButton2WithImage:(UIImage *)image title:(NSString *)title titleColor:(UIColor *)titleColor {
+    [self wr_setRightButton2WithNormal:image highlighted:image title:title titleColor:titleColor];
+}
+
+#pragma mark - 搜索按钮
+- (void)wr_setSearchButtonWithNormal:(UIImage *)normal highlighted:(UIImage *)highlighted title:(NSString *)title titleColor:(UIColor *)titleColor {
+    self.searchButton.hidden = NO;
+    [self.searchButton setImage:normal forState:UIControlStateNormal];
+    [self.searchButton setImage:highlighted forState:UIControlStateHighlighted];
+    [self.searchButton setTitle:title forState:UIControlStateNormal];
+    [self.searchButton setTitleColor:titleColor forState:UIControlStateNormal];
+}
+- (void)wr_setSearchButtonWithImage:(UIImage *)image title:(NSString *)title titleColor:(UIColor *)titleColor {
+    [self wr_setSearchButtonWithNormal:image highlighted:image title:title titleColor:titleColor];
+}
+- (void)wr_setSearchButtonWithNormal:(UIImage *)normal highlighted:(UIImage *)highlighted {
+    [self wr_setSearchButtonWithNormal:normal highlighted:highlighted title:nil titleColor:nil];
+}
+- (void)wr_setSearchButtonWithImage:(UIImage *)image {
+    [self wr_setSearchButtonWithNormal:image highlighted:image title:nil titleColor:nil];
+}
+- (void)wr_setSearchButtonWithTitle:(NSString *)title titleColor:(UIColor *)titleColor {
+    [self wr_setSearchButtonWithNormal:nil highlighted:nil title:title titleColor:titleColor];
+}
+
 #pragma mark - setter
 -(void)setTitle:(NSString *)title {
     _title = title;
@@ -235,6 +287,37 @@
     }
     return _rightButton;
 }
+-(UIButton *)rightButton1 {
+    if (!_rightButton1) {
+        _rightButton1 = [[UIButton alloc] init];
+        [_rightButton1 addTarget:self action:@selector(clickRight) forControlEvents:UIControlEventTouchUpInside];
+        _rightButton1.imageView.contentMode = UIViewContentModeCenter;
+        _rightButton1.titleLabel.font = WSYFont(16);
+        _rightButton1.hidden = YES;
+    }
+    return _rightButton1;
+}
+-(UIButton *)rightButton2 {
+    if (!_rightButton2) {
+        _rightButton2 = [[UIButton alloc] init];
+        [_rightButton2 addTarget:self action:@selector(clickRight) forControlEvents:UIControlEventTouchUpInside];
+        _rightButton2.imageView.contentMode = UIViewContentModeCenter;
+        _rightButton2.titleLabel.font = WSYFont(16);
+        _rightButton2.hidden = YES;
+    }
+    return _rightButton2;
+}
+-(UIButton *)searchButton {
+    if (!_searchButton) {
+        _searchButton = [[UIButton alloc] init];
+        [_searchButton addTarget:self action:@selector(clickRight) forControlEvents:UIControlEventTouchUpInside];
+        [_searchButton setBackgroundColor:[UIColor whiteColor]];
+        _searchButton.imageView.contentMode = UIViewContentModeCenter;
+        _searchButton.titleLabel.font = WSYFont(15);
+        _searchButton.hidden = YES;
+    }
+    return _searchButton;
+}
 -(UILabel *)titleLable {
     if (!_titleLable) {
         _titleLable = [[UILabel alloc] init];
@@ -242,6 +325,7 @@
         _titleLable.font = [UIFont systemFontOfSize:kWRDefaultTitleSize];
         _titleLable.textAlignment = NSTextAlignmentCenter;
         _titleLable.hidden = YES;
+        _titleLable.font = WSYFont(16);
     }
     return _titleLable;
 }

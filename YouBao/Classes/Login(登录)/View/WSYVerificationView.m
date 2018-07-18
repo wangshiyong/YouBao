@@ -10,14 +10,11 @@
 
 @interface WSYVerificationView ()
 
-@property (nonatomic, strong) UIButton *areaCodeBtn;
-@property (nonatomic, strong) UITextField *phoneText;
+
 @property (nonatomic, strong) UIView *line1;
 @property (nonatomic, strong) UILabel *codeLab;
-@property (nonatomic, strong) UITextField *codeText;
-@property (nonatomic, strong) UIButton *codeBtn;
 @property (nonatomic, strong) UIView *line2;
-@property (nonatomic, strong) UIButton *loginCodeBtn;
+
 
 @end
 
@@ -33,55 +30,55 @@
 
 - (void)setUpUI {
     
-//    self.backgroundColor = [UIColor yellowColor];
-    
-    self.areaCodeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.areaCodeBtn setTitle:@"中国 +86" forState:UIControlStateNormal];
+    _areaCodeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_areaCodeBtn setTitle:@"中国 +86" forState:UIControlStateNormal];
 //    self.areaCodeBtn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-    [self.areaCodeBtn setTitleColor:Color_Wathet forState:UIControlStateNormal];
-    self.areaCodeBtn.titleLabel.font = WSYFont(15);
-    [self addSubview:self.areaCodeBtn];
+    [_areaCodeBtn setTitleColor:Color_Wathet forState:UIControlStateNormal];
+    _areaCodeBtn.titleLabel.font = WSYFont(15);
+    [self addSubview:_areaCodeBtn];
     
-    self.phoneText = [UITextField new];
-    self.phoneText.placeholder = @"请输入手机号";
-    self.phoneText.font = WSYFont(16);
-    self.phoneText.clearButtonMode = UITextFieldViewModeWhileEditing;
-    [self addSubview:self.phoneText];
+    _phoneText = [UITextField new];
+    _phoneText.placeholder = @"请输入手机号";
+    _phoneText.font = WSYFont(16);
+    _phoneText.clearButtonMode = UITextFieldViewModeWhileEditing;
+    _phoneText.keyboardType = UIKeyboardTypeNumberPad;
+    [self addSubview:_phoneText];
     
-    self.line1 = [UIView new];
-    self.line1.backgroundColor = WSYColor(241, 241, 241);
-    [self addSubview:self.line1];
+    _line1 = [UIView new];
+    _line1.backgroundColor = WSYColor(241, 241, 241);
+    [self addSubview:_line1];
     
     
-    self.codeLab = [UILabel new];
-    self.codeLab.text = @"短信验证码";
-    self.codeLab.textColor = WSYTheme_Text;
-    self.codeLab.font = WSYFont(15);
-    [self addSubview:self.codeLab];
+    _codeLab = [UILabel new];
+    _codeLab.text = @"短信验证码";
+    _codeLab.textColor = WSYTheme_Text;
+    _codeLab.font = WSYFont(15);
+    [self addSubview:_codeLab];
     
-    self.codeText = [UITextField new];
-    self.codeText.placeholder = @"请输入验证码";
-    self.codeText.clearButtonMode = UITextFieldViewModeWhileEditing;
-    self.codeText.font = WSYFont(16);
-    [self addSubview:self.codeText];
+    _codeText = [UITextField new];
+    _codeText.placeholder = @"请输入验证码";
+    _codeText.clearButtonMode = UITextFieldViewModeWhileEditing;
+    _codeText.keyboardType = UIKeyboardTypeNumberPad;
+    _codeText.font = WSYFont(16);
+    [self addSubview:_codeText];
     
-    self.codeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.codeBtn setTitle:@"获取验证码" forState:UIControlStateNormal];
-    self.codeBtn.titleLabel.font = WSYFont(13);
-    self.codeBtn.backgroundColor = WSYTheme_Color;
-    [self addSubview:self.codeBtn];
-    self.codeBtn.layer.cornerRadius = 14;
+    _codeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_codeBtn setTitle:@"重新发送" forState:UIControlStateNormal];
+    _codeBtn.titleLabel.font = WSYFont(13);
+    _codeBtn.backgroundColor = WSYTheme_Color;
+    [self addSubview:_codeBtn];
+    _codeBtn.layer.cornerRadius = 19;
     
-    self.line2 = [UIView new];
-    self.line2.backgroundColor = WSYColor(241, 241, 241);
-    [self addSubview:self.line2];
+    _line2 = [UIView new];
+    _line2.backgroundColor = WSYColor(241, 241, 241);
+    [self addSubview:_line2];
     
-    self.loginCodeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.loginCodeBtn setTitle:@"登 录" forState:UIControlStateNormal];
-    self.loginCodeBtn.titleLabel.font = WSYFont(18);
-    self.loginCodeBtn.backgroundColor = WSYTheme_Color;
-    self.loginCodeBtn.layer.cornerRadius = 23;
-    [self addSubview:self.loginCodeBtn];
+    _loginCodeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_loginCodeBtn setTitle:@"登 录" forState:UIControlStateNormal];
+    _loginCodeBtn.titleLabel.font = WSYFont(18);
+    _loginCodeBtn.backgroundColor = WSYTheme_Color;
+    _loginCodeBtn.layer.cornerRadius = 23;
+    [self addSubview:_loginCodeBtn];
 }
 
 
@@ -124,6 +121,7 @@
         make.right.equalTo(self).offset(-20);
         make.centerY.equalTo(self.codeText);
         make.width.mas_equalTo(100);
+        make.height.mas_equalTo(38);
     }];
     
     [self.codeText mas_makeConstraints:^(MASConstraintMaker *make){

@@ -20,7 +20,10 @@
 @property (nonatomic, strong) UIColor  *barBackgroundColor;
 @property (nonatomic, strong) UIImage  *barBackgroundImage;
 @property (nonatomic, strong) UIButton *rightButton;
+@property (nonatomic, strong) UIButton *rightButton1;
+@property (nonatomic, strong) UIButton *rightButton2;
 @property (nonatomic, strong) UIButton *leftButton;
+@property (nonatomic, strong) UIButton *searchButton;
 
 + (instancetype)CustomNavigationBar;
 
@@ -36,12 +39,20 @@
 - (void)wr_setLeftButtonWithTitle:(NSString *)title titleColor:(UIColor *)titleColor;
 
 //- (void)wr_setRightButtonWithNormal:(UIImage *)normal highlighted:(UIImage *)highlighted title:(NSString *)title titleColor:(UIColor *)titleColor;
-//- (void)wr_setRightButtonWithImage:(UIImage *)image title:(NSString *)title titleColor:(UIColor *)titleColor;
+- (void)wr_setRightButtonWithImage:(UIImage *)image title:(NSString *)title titleColor:(UIColor *)titleColor;
 - (void)wr_setRightButtonWithNormal:(UIImage *)normal highlighted:(UIImage *)highlighted;
 - (void)wr_setRightButtonWithImage:(UIImage *)image;
 - (void)wr_setRightButtonWithTitle:(NSString *)title titleColor:(UIColor *)titleColor;
 
+//右按钮1
+- (void)wr_setRightButton1WithImage:(UIImage *)image title:(NSString *)title titleColor:(UIColor *)titleColor;
 
+//右按钮2
+- (void)wr_setRightButton2WithImage:(UIImage *)image title:(NSString *)title titleColor:(UIColor *)titleColor;
+
+- (void)wr_setSearchButtonWithNormal:(UIImage *)normal highlighted:(UIImage *)highlighted;
+- (void)wr_setSearchButtonWithImage:(UIImage *)image;
+- (void)wr_setSearchButtonWithTitle:(NSString *)title titleColor:(UIColor *)titleColor;
 
 @end
 

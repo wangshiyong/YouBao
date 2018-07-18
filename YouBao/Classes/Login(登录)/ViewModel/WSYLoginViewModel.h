@@ -12,16 +12,27 @@
 
 @property (nonatomic, strong) NSString   *userName;
 @property (nonatomic, strong) NSString   *password;
+@property (nonatomic, strong) NSString   *phone;
+@property (nonatomic, strong) NSString   *code;
 
 @property (nonatomic, strong) RACSubject *successSubject;
 @property (nonatomic, strong) RACSubject *failureSubject;
 @property (nonatomic, strong) RACSubject *errorSubject;
+@property (nonatomic, strong) RACSubject *successSubjectCode;
+@property (nonatomic, strong) RACSubject *failureSubjectCode;
+@property (nonatomic, strong) RACSubject *errorSubjectCode;
+@property (nonatomic, strong) RACSubject *successSubjectGetCode;
+@property (nonatomic, strong) RACSubject *failureSubjectGetCode;
 
 /**
  *  按钮是否可点信息
  */
 - (RACSignal *)validSignal;
+- (RACSignal *)validSignalCode;
+- (RACSignal *)validSignalCodeBtn;
 
+- (void)getCodeBtn;
 - (void)loginBtn;
+- (void)loginBtnCode;
 
 @end

@@ -7,7 +7,7 @@
 //
 
 #import "WSYBaseViewController.h"
-#import "WRNavigationBar.h"
+#import <IQKeyboardManager/IQKeyboardManager.h>
 
 @interface WSYBaseViewController ()
 
@@ -15,8 +15,7 @@
 
 @implementation WSYBaseViewController
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     self.navigationController.navigationBar.hidden = YES;
     self.automaticallyAdjustsScrollViewInsets = NO;
@@ -24,29 +23,32 @@
     [self setupNavBar];
 }
 
-- (void)setupNavBar
-{
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [[IQKeyboardManager sharedManager] resignFirstResponder];
+}
+
+- (void)setupNavBar {
     [self.view addSubview:self.customNavBar];
     
     // 设置自定义导航栏背景图片
 //    self.customNavBar.barBackgroundImage = [UIImage imageNamed:@"millcolorGrad"];
-    //    self.customNavBar.barBackgroundColor = kThemeColor;
+//        self.customNavBar.barBackgroundColor = WSYTheme_Color;
     
     // 设置自定义导航栏标题颜色
     self.customNavBar.titleLabelColor = [UIColor blackColor];
 //    [self.customNavBar wr_setBottomLineHidden:YES];
     if (self.navigationController.childViewControllers.count != 1) {
-//        [self.customNavBar wr_setLeftButtonWithTitle:@"返回" titleColor:[UIColor blackColor]];
-        [self.customNavBar wr_setLeftButtonWithImage:[UIImage imageNamed:@"N_back"]];
+        [self.customNavBar wr_setLeftButtonWithImage:[UIImage imageNamed:@"N_blackBack"]];
     }
 }
 
-- (WRCustomNavigationBar *)customNavBar
-{
+- (WRCustomNavigationBar *)customNavBar {
     if (_customNavBar == nil) {
         _customNavBar = [WRCustomNavigationBar CustomNavigationBar];
     }
     return _customNavBar;
 }
+
 
 @end

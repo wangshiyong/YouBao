@@ -37,8 +37,10 @@ blue:((CGFloat)(rgbValue & 0xFF)) / 255.0 alpha:(a)]
 
 
 #define WSYFont(a)  [UIFont systemFontOfSize:a];
-
+#define WSYBoldFont(a)  [UIFont boldSystemFontOfSize:a];
 
 #define GoodsHomeSilderImagesArray @[@"http://gfs5.gomein.net.cn/T1obZ_BmLT1RCvBVdK.jpg",@"http://gfs9.gomein.net.cn/T1C3J_B5LT1RCvBVdK.jpg",@"http://gfs5.gomein.net.cn/T1CwYjBCCT1RCvBVdK.jpg",@"http://gfs7.gomein.net.cn/T1u8V_B4ET1RCvBVdK.jpg",@"http://gfs7.gomein.net.cn/T1zODgB5CT1RCvBVdK.jpg"]
+
+#define HomeBottomViewGIFImage @"http://gfs8.gomein.net.cn/T1RbW_BmdT1RCvBVdK.gif"
 
 #endif /* Macros_h */

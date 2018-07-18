@@ -2,15 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>是否允许定位当前城市</string>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<string>zh_CN</string>
 	<key>CFBundleDisplayName</key>
 	<string>游宝</string>
 	<key>CFBundleExecutable</key>
@@ -25,12 +18,105 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>wechat</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wx4868b35061f87885</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>weibo</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wb568898243</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>qq</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>QQ05FB8B52</string>
+				<string>tencent100371282</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>weixin</string>
+		<string>timapiV1</string>
+		<string>wtlogintimV1</string>
+		<string>timopensdkdataline</string>
+		<string>timgamebindinggroup</string>
+		<string>timopensdkapiV4</string>
+		<string>timopensdkgrouptribeshare</string>
+		<string>wtlogintim</string>
+		<string>timOpensdkSSoLogin</string>
+		<string>timapiwallet</string>
+		<string>timgamebindinggroup</string>
+		<string>timwpa</string>
+		<string>timopensdkfriend</string>
+		<string>timapi</string>
+		<string>tim</string>
+		<string>tencentapi.qzone.reqContent</string>
+		<string>tencentapi.qq.reqContent</string>
+		<string>mqqopensdkgrouptribeshare</string>
+		<string>mqqgamebindinggroup</string>
+		<string>mqqopensdkdataline</string>
+		<string>mqqopensdkfriend</string>
+		<string>mqqapiwallet</string>
+		<string>mqzoneopensdkapiV2</string>
+		<string>mqzoneopensdkapi19</string>
+		<string>mqzoneopensdkapi</string>
+		<string>mqzoneopensdk</string>
+		<string>mqzone</string>
+		<string>wtloginmqq2</string>
+		<string>mqqopensdkapiV4</string>
+		<string>mqqopensdkapiV3</string>
+		<string>mqqopensdkapiV2</string>
+		<string>mqqOpensdkSSoLogin</string>
+		<string>mttbrowser</string>
+		<string>mqqbrowser</string>
+		<string>mqqwpa</string>
+		<string>mqqapi</string>
+		<string>mqq</string>
+		<string>sinaweibohd</string>
+		<string>sinaweibo</string>
+		<string>weibosdk2.5</string>
+		<string>weibosdk</string>
+		<string>weibo</string>
+		<string>sinaweibosso</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
+	<key>MOBAppSecret</key>
+	<string>b89d2427a3bc7ad1aea1e1e8c1d36bf3</string>
+	<key>MOBAppkey</key>
+	<string>moba6b6c6d6</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>是否允许拍照</string>
+	<key>NSContactsUsageDescription</key>
+	<string>是否运行访问通讯录</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>是否允许定位当前城市</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>是否允许访问相册</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>

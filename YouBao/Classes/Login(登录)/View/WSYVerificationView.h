@@ -10,4 +10,10 @@
 
 @interface WSYVerificationView : UIView
 
+@property (nonatomic, strong) UIButton *areaCodeBtn;
+@property (nonatomic, strong) UITextField *phoneText;
+@property (nonatomic, strong) UITextField *codeText;
+@property (nonatomic, strong) UIButton *codeBtn;
+@property (nonatomic, strong) UIButton *loginCodeBtn;
+
 @end

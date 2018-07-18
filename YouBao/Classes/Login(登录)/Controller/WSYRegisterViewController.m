@@ -8,11 +8,19 @@
 
 #import "WSYRegisterViewController.h"
 
+// Models
+#import "WSYRegisterViewModel.h"
 // Vendors
 #import <YYText/YYText.h>
+#import "CRToast.h"
+#import "DGActivityIndicatorView.h"
 
-@interface WSYRegisterViewController ()
+@interface WSYRegisterViewController ()<UIGestureRecognizerDelegate>{
+    NSTimer *_timer;
+    NSInteger _i;
+}
 
+/* UI界面 */
 @property (nonatomic, strong) UIButton *areaCodeBtn;
 @property (nonatomic, strong) UITextField *phoneText;
 @property (nonatomic, strong) UIView *line1;
@@ -27,8 +35,11 @@
 @property (nonatomic, strong) UITextField *pwdText;
 @property (nonatomic, strong) UIButton *showBtn;
 @property (nonatomic, strong) UIView *line4;
-@property (strong , nonatomic)YYLabel *privacyLab;
+@property (nonatomic, strong) YYLabel *privacyLab;
 @property (nonatomic, strong) UIButton *registerBtn;
+/* 注册模型 */
+@property (nonatomic, strong) WSYRegisterViewModel *registerModel;
+@property (nonatomic, strong) DGActivityIndicatorView *activityIndicatorView;
 
 @end
 
@@ -40,6 +51,12 @@
     [self setUpUI];
     [self layoutUI];
     [self bindUI];
+    [self bindRegisterModel];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [_timer invalidate];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -47,6 +64,11 @@
     // Dispose of any resources that can be recreated.
 }
 
+#pragma mark ============绑定监听UI============
+
+/**
+ 绑定监听UI
+ */
 - (void)bindUI {
     @weakify(self);
     [[self.showBtn rac_signalForControlEvents:UIControlEventTouchUpInside]subscribeNext:^(id x){
@@ -59,109 +81,274 @@
         }
     }];
     
-    [[self.registerBtn rac_signalForControlEvents:UIControlEventTouchUpInside]subscribeNext:^(id x){
+    UITapGestureRecognizer *recognizer = [[UITapGestureRecognizer alloc]init];
+    [[recognizer rac_gestureSignal]subscribeNext:^(id x){
         @strongify(self);
-        [self dismissViewControllerAnimated:YES completion:nil];
+        [self.phoneText resignFirstResponder];
+        [self.codeText resignFirstResponder];
+        [self.nameText resignFirstResponder];
+        [self.pwdText resignFirstResponder];
+    }];
+    recognizer.delegate = self;
+    [self.view addGestureRecognizer:recognizer];
+  
+    [[self.phoneText rac_textSignal]subscribeNext:^(id x){
+        @strongify(self);
+        if([x length] > 11){
+            self.phoneText.text = [NSString stringWithFormat:@"%@",[x substringToIndex:11]];
+        }
+    }];
+    
+    [[self.codeText rac_textSignal]subscribeNext:^(id x){
+        @strongify(self);
+        if([x length] > 4){
+            self.codeText.text = [NSString stringWithFormat:@"%@",[x substringToIndex:4]];
+        }
+    }];
+    
+    [[self.nameText rac_textSignal]subscribeNext:^(id x){
+        @strongify(self);
+        if([x length] > 15){
+            self.nameText.text = [NSString stringWithFormat:@"%@",[x substringToIndex:15]];
+        }
+    }];
+    
+    [[self.pwdText rac_textSignal]subscribeNext:^(id x){
+        @strongify(self);
+        if([x length] > 20){
+            self.pwdText.text = [NSString stringWithFormat:@"%@",[x substringToIndex:20]];
+        }
     }];
 }
 
-- (void)setUpUI {
-    self.areaCodeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.areaCodeBtn setTitle:@"中国 +86" forState:UIControlStateNormal];
-    [self.areaCodeBtn setTitleColor:Color_Wathet forState:UIControlStateNormal];
-    self.areaCodeBtn.titleLabel.font = WSYFont(15);
-    [self.view addSubview:self.areaCodeBtn];
-    
-    self.phoneText = [UITextField new];
-    self.phoneText.placeholder = @"请输入手机号";
-    self.phoneText.font = WSYFont(16);
-    self.phoneText.clearButtonMode = UITextFieldViewModeWhileEditing;
-    [self.view addSubview:self.phoneText];
 
-    self.line1 = [UIView new];
-    self.line1.backgroundColor = WSYColor(241, 241, 241);
-    [self.view addSubview:self.line1];
+/**
+ 绑定注册模型
+ */
+- (void)bindRegisterModel {
+    self.registerModel = [[WSYRegisterViewModel alloc]init];
+    RAC(self.registerModel, userName) = self.nameText.rac_textSignal;
+    RAC(self.registerModel, password) = self.pwdText.rac_textSignal;
+    RAC(self.codeBtn, enabled) = [self.registerModel validSignalCode];
+    RAC(self.registerModel, phone) = self.phoneText.rac_textSignal;
+    RAC(self.registerModel, code) = self.codeText.rac_textSignal;
+    RAC(self.registerBtn, enabled) = [self.registerModel validSignal];
+    
+    @weakify(self);
+    [self.registerModel.successSubjectCode subscribeNext:^(NSString *str){
+        @strongify(self);
+        [CRToastManager showNotificationWithOptions:[self successOptions:str]
+                                     apperanceBlock:nil
+                                    completionBlock:nil];
+    }];
+    
+    [self.registerModel.errorSubjectCode subscribeNext:^(NSString *str){
+        @strongify(self);
+        [CRToastManager showNotificationWithOptions:[self errorOptions:str]
+                                     apperanceBlock:nil
+                                    completionBlock:nil];
+    }];
+    
+    RAC(self.codeBtn, alpha) = [[self.registerModel validSignalCode] map:^(NSNumber *b){
+        return b.boolValue ? @1: @0.4;
+    }];
+    
+    [[self.codeBtn rac_signalForControlEvents:UIControlEventTouchUpInside]subscribeNext:^(NSString *str){
+        @strongify(self);
+        if ([self isChinaMobile:self.phoneText.text]) {
+            [self.registerModel getCodeBtn];
+            self->_timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(startCount) userInfo:nil repeats:YES];
+            self->_i = 60;
+        } else {
+            [CRToastManager showNotificationWithOptions:[self errorOptions:str]
+                                         apperanceBlock:nil
+                                        completionBlock:nil];
+        }
+    }];
+    
+    [self.registerModel.successSubject subscribeNext:^(NSString *str){
+        @strongify(self);
+        [self.activityIndicatorView stopAnimating];
+        [self showStrHUD:str];
+        [self.navigationController popViewControllerAnimated:YES];
+    }];
+    
+    [self.registerModel.failureSubject subscribeNext:^(NSString *str){
+        @strongify(self);
+        [CRToastManager showNotificationWithOptions:[self errorOptions:str]
+                                     apperanceBlock:nil
+                                    completionBlock:nil];
+    }];
+    
+    [self.registerModel.errorSubject subscribeNext:^(NSString *str){
+        @strongify(self);
+        [self.activityIndicatorView stopAnimating];
+        [CRToastManager showNotificationWithOptions:[self errorOptions:str]
+                                     apperanceBlock:nil
+                                    completionBlock:nil];
+    }];
+    
+    RAC(self.registerBtn, alpha) = [[self.registerModel validSignal] map:^(NSNumber *b){
+        return b.boolValue ? @1: @0.4;
+    }];
+    
+    [[self.registerBtn rac_signalForControlEvents:UIControlEventTouchUpInside]subscribeNext:^(id x){
+        @strongify(self);
+        [self.activityIndicatorView startAnimating];
+        [self.registerModel loginBtnCode];
+    }];
+}
+
+- (BOOL)isChinaMobile:(NSString *)phoneNum
+{
+    NSString *CM = @"^1(3[0-9]|4[57]|5[0-35-9]|8[0-9]|7[0678])\\d{8}$";
+    NSPredicate *regextestcm = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", CM];
+    return [regextestcm evaluateWithObject:phoneNum];
+}
+
+- (NSDictionary*)successOptions:(NSString *)successStr {
+    NSDictionary *options = @{
+                              kCRToastAnimationOutDirectionKey : @(0),
+                              kCRToastNotificationTypeKey : @(CRToastTypeNavigationBar),
+                              kCRToastNotificationPresentationTypeKey : @(CRToastPresentationTypeCover),
+                              kCRToastTextKey : successStr,
+                              kCRToastTimeIntervalKey : @(1.0),
+                              kCRToastTextColorKey : [UIColor blackColor],
+                              kCRToastBackgroundColorKey : [UIColor whiteColor]
+                              };
+    return [NSDictionary dictionaryWithDictionary:options];
+}
+
+- (NSDictionary*)errorOptions:(NSString *)errorStr {
+    NSDictionary *options = @{
+                              kCRToastAnimationOutDirectionKey : @(0),
+                              kCRToastNotificationTypeKey : @(CRToastTypeNavigationBar),
+                              kCRToastNotificationPresentationTypeKey : @(CRToastPresentationTypeCover),
+                              kCRToastTextKey : errorStr,
+                              kCRToastTimeIntervalKey : @(1.0),
+                              kCRToastBackgroundColorKey : WSYTheme_Color
+                              };
+    return [NSDictionary dictionaryWithDictionary:options];
+}
+
+- (void)startCount {
+    NSString *text = [NSString stringWithFormat:@"重新发送(%zd)",_i] ;
+    [_codeBtn setTitle:text forState:UIControlStateNormal];
+    _codeBtn.enabled = NO;
+    _codeBtn.backgroundColor = WSYColor(150, 150, 150);
+    
+    if (!_i--) {
+        [_timer invalidate];
+        [_codeBtn setTitle:@"重新发送" forState:UIControlStateNormal];
+        _codeBtn.enabled = YES;
+        _codeBtn.backgroundColor = WSYTheme_Color;
+    }
+}
+
+#pragma mark ============设置UI界面============
+
+- (void)setUpUI {
+    _areaCodeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_areaCodeBtn setTitle:@"中国 +86" forState:UIControlStateNormal];
+    [_areaCodeBtn setTitleColor:Color_Wathet forState:UIControlStateNormal];
+    _areaCodeBtn.titleLabel.font = WSYFont(15);
+    [self.view addSubview:_areaCodeBtn];
+    
+    _phoneText = [UITextField new];
+    _phoneText.placeholder = @"请输入手机号";
+    _phoneText.font = WSYFont(16);
+    _phoneText.clearButtonMode = UITextFieldViewModeWhileEditing;
+    _phoneText.keyboardType = UIKeyboardTypeNumberPad;
+    [self.view addSubview:_phoneText];
+
+    _line1 = [UIView new];
+    _line1.backgroundColor = WSYColor(241, 241, 241);
+    [self.view addSubview:_line1];
     
     
-    self.codeLab = [UILabel new];
-    self.codeLab.text = @"短信验证码";
-    self.codeLab.textColor = WSYTheme_Text;
-    self.codeLab.font = WSYFont(15);
-    [self.view addSubview:self.codeLab];
+    _codeLab = [UILabel new];
+    _codeLab.text = @"短信验证码";
+    _codeLab.textColor = WSYTheme_Text;
+    _codeLab.font = WSYFont(15);
+    [self.view addSubview:_codeLab];
     
-    self.codeText = [UITextField new];
-    self.codeText.placeholder = @"请输入验证码";
-    self.codeText.clearButtonMode = UITextFieldViewModeWhileEditing;
-    self.codeText.font = WSYFont(16);
-    [self.view addSubview:self.codeText];
+    _codeText = [UITextField new];
+    _codeText.placeholder = @"请输入验证码";
+    _codeText.clearButtonMode = UITextFieldViewModeWhileEditing;
+    _codeText.keyboardType = UIKeyboardTypeNumberPad;
+    _codeText.font = WSYFont(16);
+    [self.view addSubview:_codeText];
     
-    self.codeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.codeBtn setTitle:@"获取验证码" forState:UIControlStateNormal];
-    self.codeBtn.titleLabel.font = WSYFont(13);
-    self.codeBtn.backgroundColor = WSYTheme_Color;
-    [self.view addSubview:self.codeBtn];
-    self.codeBtn.layer.cornerRadius = 14;
+    _codeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_codeBtn setTitle:@"重新发送" forState:UIControlStateNormal];
+    _codeBtn.titleLabel.font = WSYFont(13);
+    _codeBtn.backgroundColor = WSYTheme_Color;
+    [self.view addSubview:_codeBtn];
+    _codeBtn.layer.cornerRadius = 19;
     
-    self.line2 = [UIView new];
-    self.line2.backgroundColor = WSYColor(241, 241, 241);
-    [self.view addSubview:self.line2];
+    _line2 = [UIView new];
+    _line2.backgroundColor = WSYColor(241, 241, 241);
+    [self.view addSubview:_line2];
     
-    self.nameLab = [UILabel new];
-    self.nameLab.text = @"昵称";
-    self.nameLab.textColor = WSYTheme_Text;
-    self.nameLab.font = WSYFont(15);
-    [self.view addSubview:self.nameLab];
+    _nameLab = [UILabel new];
+    _nameLab.text = @"昵称";
+    _nameLab.textColor = WSYTheme_Text;
+    _nameLab.font = WSYFont(15);
+    [self.view addSubview:_nameLab];
     
-    self.nameText = [UITextField new];
-    self.nameText.placeholder = @"15个字符以内";
-    self.nameText.clearButtonMode = UITextFieldViewModeWhileEditing;
-    self.nameText.font = WSYFont(16);
-    [self.view addSubview:self.nameText];
+    _nameText = [UITextField new];
+    _nameText.placeholder = @"15个字符以内";
+    _nameText.clearButtonMode = UITextFieldViewModeWhileEditing;
+    _nameText.font = WSYFont(16);
+    [self.view addSubview:_nameText];
     
-    self.line3 = [UIView new];
-    self.line3.backgroundColor = WSYColor(241, 241, 241);
-    [self.view addSubview:self.line3];
+    _line3 = [UIView new];
+    _line3.backgroundColor = WSYColor(241, 241, 241);
+    [self.view addSubview:_line3];
     
-    self.pwdLab = [UILabel new];
-    self.pwdLab.text = @"密码";
-    self.pwdLab.textColor = WSYTheme_Text;
-    self.pwdLab.font = WSYFont(15);
-    [self.view addSubview:self.pwdLab];
+    _pwdLab = [UILabel new];
+    _pwdLab.text = @"密码";
+    _pwdLab.textColor = WSYTheme_Text;
+    _pwdLab.font = WSYFont(15);
+    [self.view addSubview:_pwdLab];
     
-    self.pwdText = [UITextField new];
-    self.pwdText.placeholder = @"6-20位数字或字母";
-    self.pwdText.clearButtonMode = UITextFieldViewModeWhileEditing;
-    self.pwdText.font = WSYFont(16);
-    self.pwdText.secureTextEntry = YES;
-    [self.view addSubview:self.pwdText];
+    _pwdText = [UITextField new];
+    _pwdText.placeholder = @"6-20位数字或字母";
+    _pwdText.clearButtonMode = UITextFieldViewModeWhileEditing;
+    _pwdText.font = WSYFont(16);
+    _pwdText.secureTextEntry = YES;
+    [self.view addSubview:_pwdText];
     
-    self.showBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.showBtn setImage:[UIImage imageNamed:@"L_hidePwd"] forState:UIControlStateNormal];
-    [self.showBtn setImage:[UIImage imageNamed:@"L_showPwd"] forState:UIControlStateSelected];
-    [self.view addSubview:self.showBtn];
+    _showBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_showBtn setImage:[UIImage imageNamed:@"L_hidePwd"] forState:UIControlStateNormal];
+    [_showBtn setImage:[UIImage imageNamed:@"L_showPwd"] forState:UIControlStateSelected];
+    [self.view addSubview:_showBtn];
     
-    self.line4 = [UIView new];
-    self.line4.backgroundColor = WSYColor(241, 241, 241);
-    [self.view addSubview:self.line4];
+    _line4 = [UIView new];
+    _line4.backgroundColor = WSYColor(241, 241, 241);
+    [self.view addSubview:_line4];
     
-    self.privacyLab = [YYLabel new];
+    _privacyLab = [YYLabel new];
     NSMutableAttributedString *text = [[NSMutableAttributedString alloc]initWithString:@"点击完成即同意《游宝用户注册协议》"];
     text.yy_color = WSYColor(150, 150, 150);
     self.privacyLab.font = WSYFont(11);
     [text yy_setTextHighlightRange:NSMakeRange(7, 10) color:Color_Wathet backgroundColor:[UIColor clearColor] tapAction:^(UIView * _Nonnull containerView, NSAttributedString * _Nonnull text, NSRange range, CGRect rect) {
         NSLog(@"《信天嗡用户注册协议》被点击了=====");
     }];
-    self.privacyLab.attributedText = text;
-    self.privacyLab.textAlignment = NSTextAlignmentCenter;
-    [self.view addSubview:self.privacyLab];
+    _privacyLab.attributedText = text;
+    _privacyLab.textAlignment = NSTextAlignmentCenter;
+    [self.view addSubview:_privacyLab];
     
-    self.registerBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.registerBtn setTitle:@"完成注册，进入游宝" forState:UIControlStateNormal];
-    self.registerBtn.titleLabel.font = WSYFont(18);
-    self.registerBtn.backgroundColor = WSYTheme_Color;
-    self.registerBtn.layer.cornerRadius = 23;
-    [self.view addSubview:self.registerBtn];
-
+    _registerBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [_registerBtn setTitle:@"完成注册，进入游宝" forState:UIControlStateNormal];
+    _registerBtn.titleLabel.font = WSYFont(18);
+    _registerBtn.backgroundColor = WSYTheme_Color;
+    _registerBtn.layer.cornerRadius = 23;
+    [self.view addSubview:_registerBtn];
+    
+    _activityIndicatorView = [[DGActivityIndicatorView alloc] initWithType:DGActivityIndicatorAnimationTypeLineScalePulseOut tintColor:WSYTheme_Color];
+    _activityIndicatorView.frame = (CGRect){0, 0, kScreenWidth, kScreenHeight};
+    [self.view addSubview:_activityIndicatorView];
 }
 
 - (void)layoutUI {
@@ -209,6 +396,7 @@
         make.right.equalTo(self.view).offset(-20);
         make.centerY.equalTo(self.codeText);
         make.width.mas_equalTo(100);
+        make.height.mas_equalTo(38);
     }];
     
     [self.line2 mas_makeConstraints:^(MASConstraintMaker *make){
